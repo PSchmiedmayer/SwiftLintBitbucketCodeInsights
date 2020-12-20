@@ -1,22 +1,30 @@
-// swift-tools-version:5.2
-
+// swift-tools-version:5.3
 import PackageDescription
 
 
 let package = Package(
-    name: "Apodini",
+    name: "SwiftLint Bitbucket Code Insights",
+    platforms: [
+        .macOS(.v10_15)
+    ],
     products: [
-        .library(name: "Apodini", targets: ["Apodini"])
+        .executable(name: "SwiftLintBot", targets: ["SwiftLintBot"])
     ],
     dependencies: [
-        // Dependencies declare other packages that this package depends on.
-        // .package(url: /* package url */, from: "1.0.0"),
+        .package(url: "https://github.com/vapor/vapor.git", from: "4.0.0")
     ],
     targets: [
-        .target(name: "Apodini"),
-        .testTarget(name: "ApodiniTests",
-                    dependencies: [
-                        .target(name: "Apodini")
-                    ])
+        .target(
+            name: "SwiftLintBot",
+            dependencies: [
+                .product(name: "Vapor", package: "vapor")
+            ]
+        ),
+        .testTarget(
+            name: "SwiftLintBotTests",
+            dependencies: [
+                .target(name: "SwiftLintBot")
+            ]
+        )
     ]
 )
