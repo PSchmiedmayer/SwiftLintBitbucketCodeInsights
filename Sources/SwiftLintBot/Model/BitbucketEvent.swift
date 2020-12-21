@@ -70,7 +70,7 @@ extension BitbucketEvent {
         return request.body
             .collect()
             .unwrap(or: Abort(.badRequest, reason: "Could not parse the pull request body"))
-            .flatMapThrowing { byteBuffer in
+            .mapThrowing { byteBuffer in
                 guard let data = byteBuffer.getData(at: byteBuffer.readerIndex, length: byteBuffer.readableBytes) else {
                     throw Abort(.badRequest, reason: "Could not parse the pull request body")
                 }

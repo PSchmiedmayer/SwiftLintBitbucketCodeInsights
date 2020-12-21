@@ -42,5 +42,9 @@ extension BitbucketEvent {
                     ]
                 )
             }
+            .mapThrowing {
+                app.logger.info("Cleaning up the zip file at \(sourceCodeDirectory).zip")
+                try shellOut(to: "rm \(sourceCodeDirectory).zip")
+            }
     }
 }
