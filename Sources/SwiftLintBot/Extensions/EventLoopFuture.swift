@@ -9,7 +9,7 @@ import Vapor
 
 
 extension EventLoopFuture {
-    public func mapThrowing<NewValue>(_ callback: @escaping (Value) throws -> NewValue) -> EventLoopFuture<NewValue> {
+    func mapThrowing<NewValue>(_ callback: @escaping (Value) throws -> NewValue) -> EventLoopFuture<NewValue> {
         flatMap { value in
             do {
                 return self.eventLoop.makeSucceededFuture(try callback(value))
@@ -19,7 +19,7 @@ extension EventLoopFuture {
         }
     }
 
-    public func flatMapThrowing<NewValue>(_ callback: @escaping (Value) throws -> EventLoopFuture<NewValue>) -> EventLoopFuture<NewValue> {
+    func flatMapThrowing<NewValue>(_ callback: @escaping (Value) throws -> EventLoopFuture<NewValue>) -> EventLoopFuture<NewValue> {
         mapThrowing(callback).flatMap { $0 }
     }
 }

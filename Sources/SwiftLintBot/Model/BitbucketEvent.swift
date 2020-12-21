@@ -25,11 +25,6 @@ struct BitbucketEvent {
     struct PullRequestEventContent: Decodable {
         let actor: Actor
         let pullRequest: PullRequest
-        
-        private enum CodingKeys: String, CodingKey {
-            case actor = "actor"
-            case pullRequest = "pullRequest"
-        }
     }
     
     

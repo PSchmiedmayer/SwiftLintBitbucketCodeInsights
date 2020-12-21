@@ -12,14 +12,16 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/vapor/vapor.git", from: "4.0.0"),
-        .package(url: "https://github.com/JohnSundell/ShellOut.git", from: "2.0.0")
+        .package(url: "https://github.com/JohnSundell/ShellOut.git", from: "2.0.0"),
+        .package(url: "https://github.com/JohnSundell/Files", from: "4.0.0")
     ],
     targets: [
         .target(
             name: "SwiftLintBot",
             dependencies: [
                 .product(name: "Vapor", package: "vapor"),
-                .product(name: "ShellOut", package: "ShellOut")
+                .product(name: "ShellOut", package: "ShellOut"),
+                .product(name: "Files", package: "Files")
             ]
         ),
         .testTarget(

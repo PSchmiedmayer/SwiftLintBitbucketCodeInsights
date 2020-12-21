@@ -29,7 +29,7 @@ extension BitbucketEvent {
             }
             .unwrap(or: Abort(.badRequest, reason: "Could not parse the pull request body"))
             .map { byteBuffer in
-                return request.fileio.writeFile(byteBuffer, at: "\(workingDirectory)/\(pullRequest.commitHash).zip")
+                request.fileio.writeFile(byteBuffer, at: "\(workingDirectory)/\(pullRequest.commitHash).zip")
             }
             .flatMapThrowing { _ in
                 try shellOut(

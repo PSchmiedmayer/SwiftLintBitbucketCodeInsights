@@ -6,10 +6,12 @@
 //
 
 import Vapor
+import ShellOut
 
 
 extension BitbucketEvent {
     func specifySwiftLintConfiguration(on request: Request) throws -> EventLoopFuture<Void> {
-        request.eventLoop.makeSucceededFuture(Void())
+        shell
+        return request.eventLoop.makeSucceededFuture(Void())
     }
 }

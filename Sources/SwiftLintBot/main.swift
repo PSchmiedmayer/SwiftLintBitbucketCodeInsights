@@ -12,7 +12,7 @@ defer {
 let context = try Context()
 
 
-app.post() { request in
+app.post { request in
     try BitbucketEvent
         .create(from: request)
         .flatMapThrowing { bitbucketEvent -> EventLoopFuture<BitbucketEvent> in
@@ -21,11 +21,11 @@ app.post() { request in
                 .transform(to: bitbucketEvent)
         }
         .flatMapThrowing { bitbucketEvent -> EventLoopFuture<BitbucketEvent> in
-            return try bitbucketEvent.specifySwiftLintConfiguration(on: request)
+            try bitbucketEvent.specifySwiftLintConfiguration(on: request)
                 .transform(to: bitbucketEvent)
         }
         .flatMapThrowing { bitbucketEvent -> EventLoopFuture<BitbucketEvent> in
-            return try bitbucketEvent.cleanup(on: request)
+            try bitbucketEvent.cleanup(on: request)
                 .transform(to: bitbucketEvent)
         }
         .transform(to: "Done ✅")
