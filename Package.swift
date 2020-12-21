@@ -22,6 +22,9 @@ let package = Package(
                 .product(name: "Vapor", package: "vapor"),
                 .product(name: "ShellOut", package: "ShellOut"),
                 .product(name: "Files", package: "Files")
+            ],
+            resources: [
+                .copy("Resources/swiftlint.yml")
             ]
         ),
         .testTarget(

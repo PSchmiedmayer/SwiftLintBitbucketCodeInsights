@@ -6,6 +6,7 @@
 //
 
 import Vapor
+import Files
 
 
 struct Context {
@@ -13,6 +14,7 @@ struct Context {
     let baseURL: String
     let token: String
     let reportSlug: String
+    let defaultSwiftLintConfiguration: Files.File?
     
     
     var requestHeader: HTTPHeaders {
@@ -37,7 +39,22 @@ struct Context {
                         reason: "Could not find a \"BITBUCKETSECRET\" environment variable to specify an Bitbucket access token.")
         }
         self.token = token
-        self.reportSlug = Environment.get("BITBUCKETREPORTSLUG") ?? "com.schmiedmayer.swiftlintbot"
-        app.logger.info("The SwiftLint Bot will use the \"\(self.reportSlug)\" report slug name.")
+        let reportSlug = Environment.get("BITBUCKETREPORTSLUG") ?? "com.schmiedmayer.swiftlintbot"
+        app.logger.info("The SwiftLint Bot will use the \"\(reportSlug)\" report slug name.")
+        self.reportSlug = reportSlug
+        
+        if let useBuildInSwiftConfigurationFile = Environment.get("USEBUILDINSWIFTLINTCONFIGURATIONFILE"),
+           Bool(useBuildInSwiftConfigurationFile) ?? false,
+           let defaultSwiftLintConfigurationPath = Bundle.module.url(forResource: "swiftlint", withExtension: "yml")?.path {
+            self.defaultSwiftLintConfiguration = try File(path: defaultSwiftLintConfigurationPath)
+        } else if let customSwiftLintConfigurationPath = Environment.get("CUSTOMSWIFTLINTCONFIGURATIONFILE") {
+            self.defaultSwiftLintConfiguration = try File(path: customSwiftLintConfigurationPath)
+        } else {
+            self.defaultSwiftLintConfiguration = nil
+        }
+        
+        if self.defaultSwiftLintConfiguration?.nameExcludingExtension.lowercased() == "swiftlint" {
+            try self.defaultSwiftLintConfiguration?.rename(to: ".swiftlint", keepExtension: true)
+        }
     }
 }
