@@ -7,6 +7,7 @@
 
 import Vapor
 import Files
+import ShellOut
 
 
 struct Context {
@@ -32,7 +33,7 @@ struct Context {
         self.bitbucket = bitbucket
         app.logger.info("The SwiftLint Bot will use https://\(bitbucket)")
         
-        self.baseURL = "https://\(bitbucket)/rest/api/latest"
+        self.baseURL = "https://\(bitbucket)/rest"
 
         guard let token = Environment.get("BITBUCKETSECRET") else {
             throw Abort(.internalServerError,
@@ -53,7 +54,14 @@ struct Context {
             self.defaultSwiftLintConfiguration = nil
         }
         
-        if self.defaultSwiftLintConfiguration?.nameExcludingExtension.lowercased() == "swiftlint" {
+        if let defaultSwiftLintConfiguration = self.defaultSwiftLintConfiguration,
+           defaultSwiftLintConfiguration.nameExcludingExtension.lowercased() == "swiftlint" {
+            let defaultSwiftLintConfigurationURL = URL(fileURLWithPath: defaultSwiftLintConfiguration.path)
+                .deletingLastPathComponent()
+                .appendingPathComponent(".swiftlint.yml")
+                .path
+            
+            try shellOut(to: "rm -f \"\(defaultSwiftLintConfigurationURL)\"")
             try self.defaultSwiftLintConfiguration?.rename(to: ".swiftlint", keepExtension: true)
         }
     }

@@ -32,7 +32,7 @@ struct BitbucketEvent {
     private let content: PullRequestEventContent
     
     var workingDirectory: String {
-        "\(app.directory.workingDirectory)/\(project.key)/\(repository.key)"
+        "\(app.directory.workingDirectory)\(project.key)/\(repository.key)"
     }
     
     var sourceCodeDirectory: String {
@@ -49,6 +49,10 @@ struct BitbucketEvent {
     
     var repository: Repository {
         content.pullRequest.repository
+    }
+    
+    func performSwiftLintBotActions(on request: Request) throws -> EventLoopFuture<Void> {
+        try downloadSourceCode(on: request)
     }
 }
 

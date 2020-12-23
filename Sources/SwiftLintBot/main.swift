@@ -15,18 +15,9 @@ let context = try Context()
 app.post { request in
     try BitbucketEvent
         .create(from: request)
-        .flatMapThrowing { bitbucketEvent -> EventLoopFuture<BitbucketEvent> in
+        .flatMapThrowing { bitbucketEvent -> EventLoopFuture<Void> in
             app.logger.info("Parsed webhook request: \(bitbucketEvent.type)")
-            return try bitbucketEvent.downloadSourceCode(on: request)
-                .transform(to: bitbucketEvent)
-        }
-        .flatMapThrowing { bitbucketEvent -> EventLoopFuture<BitbucketEvent> in
-            try bitbucketEvent.specifySwiftLintConfiguration(on: request)
-                .transform(to: bitbucketEvent)
-        }
-        .flatMapThrowing { bitbucketEvent -> EventLoopFuture<BitbucketEvent> in
-            try bitbucketEvent.cleanup(on: request)
-                .transform(to: bitbucketEvent)
+            return try bitbucketEvent.performSwiftLintBotActions(on: request)
         }
         .transform(to: "Done ✅")
 }

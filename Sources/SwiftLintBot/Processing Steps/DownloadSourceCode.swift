@@ -10,7 +10,7 @@ import ShellOut
 
 extension BitbucketEvent {
     private var archiveRequetsURL: URI {
-        "\(context.baseURL)/projects/\(project.key)/repos/\(repository.key)/archive?at=\(pullRequest.commitHash)&filename=\(pullRequest.commitHash).zip&format=zip"
+        "\(context.baseURL)/api/latest/projects/\(project.key)/repos/\(repository.key)/archive?at=\(pullRequest.commitHash)&filename=\(pullRequest.commitHash).zip&format=zip"
     }
     
     func downloadSourceCode(on request: Request) throws -> EventLoopFuture<Void> {
@@ -28,23 +28,11 @@ extension BitbucketEvent {
                 return response.body
             }
             .unwrap(or: Abort(.badRequest, reason: "Could not parse the pull request body"))
-            .map { byteBuffer in
+            .flatMap { byteBuffer in
                 request.fileio.writeFile(byteBuffer, at: "\(workingDirectory)/\(pullRequest.commitHash).zip")
             }
-            .flatMapThrowing { _ in
-                try shellOut(
-                    to: "unzip",
-                    arguments: [
-                        "-o",
-                        "-q",
-                        "-d \(sourceCodeDirectory)",
-                        "\(sourceCodeDirectory)"
-                    ]
-                )
-            }
-            .mapThrowing {
-                app.logger.info("Cleaning up the zip file at \(sourceCodeDirectory).zip")
-                try shellOut(to: "rm \(sourceCodeDirectory).zip")
+            .flatMapThrowing {
+                try unzipSourceCode(on: request)
             }
     }
 }
