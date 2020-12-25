@@ -16,7 +16,7 @@ app.post { request in
     try BitbucketEvent
         .create(from: request)
         .flatMapThrowing { bitbucketEvent -> EventLoopFuture<Void> in
-            app.logger.info("Parsed webhook request: \(bitbucketEvent.type)")
+            request.logger.info("Parsed webhook request: \(bitbucketEvent.type)")
             return try bitbucketEvent.performSwiftLintBotActions(on: request)
         }
         .transform(to: "Done ✅")

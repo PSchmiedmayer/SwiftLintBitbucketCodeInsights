@@ -33,7 +33,7 @@ struct Context: ParsableCommand {
         """,
         transform: readConfigurationFile
     )
-    var defaultConfiguration: Files.File? = nil
+    var configuration: Files.File? = nil
     
     
     var baseURL: String {
@@ -43,6 +43,7 @@ struct Context: ParsableCommand {
     var requestHeader: HTTPHeaders {
         var headers = HTTPHeaders()
         headers.add(name: .authorization, value: "Bearer \(context.secret)")
+        headers.add(name: "X-Atlassian-Token", value: "no-check")
         return headers
     }
     

@@ -89,7 +89,7 @@ struct InsightsReport: Content {
     let result: InsightsReportResult
     var data: [InsightsReportData] = []
     var reporter: String? = "SwiftLint Bitbucket Code Insights"
-    var link: String? = "https://github.com/PSchmiedmayer/SwiftLintBitbucketCodeInsights"
+    var link: String?
     var logoURL: String? = "https://avatars3.githubusercontent.com/u/7575099"
 }
 
@@ -107,9 +107,9 @@ extension InsightsReport {
         self.result = violations.isEmpty ? .pass : .fail
         self.details = "This commit has \(errors) errors and \(warnings) warnings as reported by SwiftLint."
         
-        let violationGroups = Dictionary(grouping: violations, by: { $0.ruleDescription })
+        let violationGroups = Dictionary(grouping: violations, by: { $0.ruleName })
         self.data = violationGroups.map { key, values in
-            .number(title: "\(key) Violations", values.count)
+            .number(title: "\(key)", values.count)
         }
     }
 }

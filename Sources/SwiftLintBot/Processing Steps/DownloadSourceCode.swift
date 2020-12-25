@@ -20,19 +20,23 @@ extension BitbucketEvent {
             .get(archiveRequetsURL, headers: context.requestHeader)
             .flatMapThrowing { response -> ByteBuffer? in
                 guard response.status == .ok else {
-                    app.logger.error("Could not download the .zip from \(archiveRequetsURL)")
+                    request.logger.error("Could not download the .zip from \(archiveRequetsURL)")
                     throw Abort(.internalServerError, reason: "Could not download the .zip archieve from BitBucket")
                 }
                 
-                app.logger.info("Recieved Zip Archive from Bitbucket (\(response.body?.readableBytes ?? 0) B)")
+                request.logger.debug("Recieved Zip Archive from Bitbucket (\(response.body?.readableBytes ?? 0) B)")
                 return response.body
             }
             .unwrap(or: Abort(.badRequest, reason: "Could not parse the pull request body"))
             .flatMap { byteBuffer in
                 request.fileio.writeFile(byteBuffer, at: "\(workingDirectory)/\(pullRequest.commitHash).zip")
             }
-            .flatMapThrowing {
-                try unzipSourceCode(on: request)
+            .flatMap {
+                do {
+                    return try unzipSourceCode(on: request)
+                } catch {
+                    return request.eventLoop.makeFailedFuture(error)
+                }
             }
     }
 }

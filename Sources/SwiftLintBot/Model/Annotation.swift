@@ -38,10 +38,21 @@ struct Annotation: Content {
 }
 
 extension Annotation {
-    init(_ styleViolation: StyleViolation) throws {
-        self.path = styleViolation.location.relativeFile
+    init(_ styleViolation: StyleViolation, relativeTo sourceCodeDirectory: URL) throws {
+        let fileURLComponents = URL(fileURLWithPath: styleViolation.location.file ?? "").standardized.pathComponents
+        let sourceCodeDirectoryComponents = sourceCodeDirectory.standardized.pathComponents
+
+        // Find number of common path components:
+        var commonComponents = 0
+        while commonComponents < fileURLComponents.count && commonComponents < sourceCodeDirectoryComponents.count
+                && fileURLComponents[commonComponents] == sourceCodeDirectoryComponents[commonComponents] {
+            commonComponents += 1
+        }
+        
+        self.path = fileURLComponents[commonComponents...].joined(separator: "/")
+        
         self.line = styleViolation.location.line
-        self.message = "\(styleViolation.ruleName) Violation: \(styleViolation.reason). \(styleViolation.ruleDescription) [\(styleViolation.ruleIdentifier)]"
+        self.message = "\(styleViolation.ruleName) Violation: \(styleViolation.reason) [\(styleViolation.ruleIdentifier)]"
         self.severity = Severity(styleViolation.severity)
     }
 }

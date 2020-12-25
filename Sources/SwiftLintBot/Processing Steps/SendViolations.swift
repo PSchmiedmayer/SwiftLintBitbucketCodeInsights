@@ -19,24 +19,38 @@ extension BitbucketEvent {
     
     func send(_ violations: [StyleViolation], on request: Request) throws -> EventLoopFuture<Void> {
         try deleteAllAnnotations(on: request)
-            .flatMapThrowing {
-                try updateInsightsReport(basedOn: violations, on: request)
+            .flatMap { () -> EventLoopFuture<Void> in
+                do {
+                    return try updateInsightsReport(basedOn: violations, on: request)
+                } catch {
+                    return request.eventLoop.makeFailedFuture(error)
+                }
             }
-            .flatMapThrowing {
-                try postAllAnnotations(basedOn: violations, on: request)
+            .flatMap { () -> EventLoopFuture<Void> in
+                do {
+                    return try postAllAnnotations(basedOn: violations, on: request)
+                } catch {
+                    return request.eventLoop.makeFailedFuture(error)
+                }
             }
-            .flatMapThrowing {
-                try cleanup(on: request)
+            .flatMapAlways { result in
+                do {
+                    if case let .failure(error) = result {
+                        request.logger.error("Could not send data to Bitbucket: \(error)")
+                    }
+                    return try cleanup(on: request)
+                } catch {
+                    request.logger.error("Could not Cleanup the working directory at \(sourceCodeDirectory)")
+                    return request.eventLoop.makeSucceededFuture(Void())
+                }
             }
     }
     
     private func deleteAllAnnotations(on request: Request) throws -> EventLoopFuture<Void> {
-        var headers = context.requestHeader
-        headers.replaceOrAdd(name: "X-Atlassian-Token", value: "no-check")
-        return request.client.delete(annotationsURL, headers: headers)
-            .mapThrowing { response in
+        return request.client.delete(annotationsURL, headers: context.requestHeader)
+            .flatMapThrowing { response in
                 guard response.status == .noContent else {
-                    app.logger.error("Could not delete the annotations from bitbucket")
+                    request.logger.error("Could not delete the annotations from bitbucket")
                     throw Abort(.internalServerError, reason: "Could not delete the annotations from bitbucket")
                 }
             }
@@ -46,13 +60,13 @@ extension BitbucketEvent {
         request.client.post(annotationsURL, headers: context.requestHeader) { clientRequest in
                 try clientRequest.content.encode(
                     [
-                        "annotations": violations.map { try Annotation($0) }
+                        "annotations": violations.map { try Annotation($0, relativeTo: URL(fileURLWithPath: sourceCodeDirectory)) }
                     ]
                 )
         }
-            .mapThrowing { response in
+            .flatMapThrowing { response in
                 guard response.status == .noContent else {
-                    app.logger.error("Could not post the annotations")
+                    request.logger.error("Could not post the annotations")
                     throw Abort(.internalServerError, reason: "Could not post the annotations")
                 }
             }
@@ -60,11 +74,11 @@ extension BitbucketEvent {
     
     private func updateInsightsReport(basedOn violations: [StyleViolation], on request: Request) throws -> EventLoopFuture<Void> {
         request.client.put(reportURL, headers: context.requestHeader) { clientRequest in
-                try clientRequest.content.encode(InsightsReport(violations))
+            try clientRequest.content.encode(InsightsReport(violations))
         }
-            .mapThrowing { response in
+            .flatMapThrowing { response in
                 guard response.status == .ok else {
-                    app.logger.error("Could not update the insights report")
+                    request.logger.error("Could not update the insights report")
                     throw Abort(.internalServerError, reason: "Could not update the insights report")
                 }
             }

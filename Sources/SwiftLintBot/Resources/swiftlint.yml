@@ -359,10 +359,10 @@ line_length: # Lines should not span too many characters.
   ignores_function_declarations: false # default: false
   ignores_interpolated_strings: true # default: false
 
-nesting: # Types should be nested at most 2 level deep, and statements should be nested at most 5 levels deep.
+nesting: # Types should be nested at most 2 level deep, and functions should be nested at most 5 levels deep.
   type_level:
     warning: 2 # warning - default: 1
-  statement_level:
+  function_level:
     warning: 5 # warning - default: 5
     
 trailing_closure:
