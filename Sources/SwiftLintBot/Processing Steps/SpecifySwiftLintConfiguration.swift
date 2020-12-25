@@ -18,7 +18,7 @@ extension BitbucketEvent {
             return request.eventLoop.makeSucceededFuture(Void())
         }
         
-        guard let defaultSwiftLintConfiguration = context.defaultSwiftLintConfiguration else {
+        guard let defaultSwiftLintConfiguration = context.defaultConfiguration else {
             app.logger.info("No .swiftlint.yml file was found")
             return request.eventLoop.makeSucceededFuture(Void())
         }

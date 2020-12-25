@@ -1,7 +1,7 @@
 import Vapor
 import ShellOut
 
-var env = try Environment.detect()
+var env = Environment(name: "custom", arguments: ["serve"])
 try LoggingSystem.bootstrap(from: &env)
 
 let app = Application(env)
@@ -9,7 +9,7 @@ defer {
     app.shutdown()
 }
 
-let context = try Context()
+let context = Context.parseOrExit()
 
 
 app.post { request in

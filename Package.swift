@@ -11,6 +11,7 @@ let package = Package(
         .executable(name: "SwiftLintBot", targets: ["SwiftLintBot"])
     ],
     dependencies: [
+        .package(url: "https://github.com/apple/swift-argument-parser", from: "0.3.0"),
         .package(url: "https://github.com/vapor/vapor.git", from: "4.0.0"),
         .package(url: "https://github.com/JohnSundell/ShellOut.git", from: "2.0.0"),
         .package(url: "https://github.com/JohnSundell/Files", from: "4.0.0"),
@@ -20,6 +21,7 @@ let package = Package(
         .target(
             name: "SwiftLintBot",
             dependencies: [
+                .product(name: "ArgumentParser", package: "swift-argument-parser"),
                 .product(name: "Vapor", package: "vapor"),
                 .product(name: "ShellOut", package: "ShellOut"),
                 .product(name: "Files", package: "Files"),
@@ -27,12 +29,6 @@ let package = Package(
             ],
             resources: [
                 .copy("Resources/swiftlint.yml")
-            ]
-        ),
-        .testTarget(
-            name: "SwiftLintBotTests",
-            dependencies: [
-                .target(name: "SwiftLintBot")
             ]
         )
     ]

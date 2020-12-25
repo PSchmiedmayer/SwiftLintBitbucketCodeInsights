@@ -10,7 +10,7 @@ import SwiftLintFramework
 
 extension BitbucketEvent {
     private var reportURL: URI {
-        "\(context.baseURL)/insights/latest/projects/\(project.key)/repos/\(repository.key)/commits/\(pullRequest.commitHash)/reports/\(context.reportSlug)"
+        "\(context.baseURL)/insights/latest/projects/\(project.key)/repos/\(repository.key)/commits/\(pullRequest.commitHash)/reports/\(context.slug)"
     }
     
     private var annotationsURL: URI {

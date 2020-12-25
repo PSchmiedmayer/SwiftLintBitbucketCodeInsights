@@ -8,61 +8,67 @@
 import Vapor
 import Files
 import ShellOut
+import ArgumentParser
 
-
-struct Context {
-    let bitbucket: String
-    let baseURL: String
-    let token: String
-    let reportSlug: String
-    let defaultSwiftLintConfiguration: Files.File?
+struct Context: ParsableCommand {
+    @ArgumentParser.Option(help: "The Bitbucket instance that is used. E.g.: bitbucket.schmiedmayer.com.")
+    var bitbucket: String
     
+    @ArgumentParser.Option(help: "The Bitbucket secret used to authenticate with the Bitbucket instance.")
+    var secret: String
+    
+    @ArgumentParser.Option(
+        help: """
+        The Bitbucket slug that should be used to identify this insighs tool.
+        The default value is com.schmiedmayer.swiftlintbot
+        """
+    )
+    var slug: String = "com.schmiedmayer.swiftlintbot"
+    
+    @ArgumentParser.Option(
+        help: """
+        The SwiftLint configuration file that should be used if there is no .swiftlint.yml file in the repository that should be evaluated.
+        The default behaviour is to execute SwiftLint with no configuration.
+        You can use `default` to use the swiftlint configuration file bundled with the SwiftLint Bitbucket Code Insights tool.
+        """,
+        transform: readConfigurationFile
+    )
+    var defaultConfiguration: Files.File? = nil
+    
+    
+    var baseURL: String {
+        "https://\(bitbucket)/rest"
+    }
     
     var requestHeader: HTTPHeaders {
         var headers = HTTPHeaders()
-        headers.add(name: .authorization, value: "Bearer \(context.token)")
+        headers.add(name: .authorization, value: "Bearer \(context.secret)")
         return headers
     }
     
     
-    init() throws {
-        guard let bitbucket = Environment.get("BITBUCKET") else {
-            throw Abort(.internalServerError,
-                        reason: "Could not find a \"BITBUCKET\" environment variable to specify the Bitbucket instance.")
-        }
-        self.bitbucket = bitbucket
-        app.logger.info("The SwiftLint Bot will use https://\(bitbucket)")
+    private static func readConfigurationFile(_ string: String) throws -> Files.File? {
+        let potentialConfigurationFile: Files.File
         
-        self.baseURL = "https://\(bitbucket)/rest"
-
-        guard let token = Environment.get("BITBUCKETSECRET") else {
-            throw Abort(.internalServerError,
-                        reason: "Could not find a \"BITBUCKETSECRET\" environment variable to specify an Bitbucket access token.")
-        }
-        self.token = token
-        let reportSlug = Environment.get("BITBUCKETREPORTSLUG") ?? "com.schmiedmayer.swiftlintbot"
-        app.logger.info("The SwiftLint Bot will use the \"\(reportSlug)\" report slug name.")
-        self.reportSlug = reportSlug
-        
-        if let useBuildInSwiftConfigurationFile = Environment.get("USEBUILDINSWIFTLINTCONFIGURATIONFILE"),
-           Bool(useBuildInSwiftConfigurationFile) ?? false,
-           let defaultSwiftLintConfigurationPath = Bundle.module.url(forResource: "swiftlint", withExtension: "yml")?.path {
-            self.defaultSwiftLintConfiguration = try File(path: defaultSwiftLintConfigurationPath)
-        } else if let customSwiftLintConfigurationPath = Environment.get("CUSTOMSWIFTLINTCONFIGURATIONFILE") {
-            self.defaultSwiftLintConfiguration = try File(path: customSwiftLintConfigurationPath)
+        if string == "default",
+           let potentialConfigurationFilePath = Bundle.module.url(forResource: "swiftlint", withExtension: "yml")?.path {
+            potentialConfigurationFile = try File(path: potentialConfigurationFilePath)
+        } else if let potentialCustomConfigurationFile = try? File(path: string) {
+            potentialConfigurationFile = potentialCustomConfigurationFile
         } else {
-            self.defaultSwiftLintConfiguration = nil
+            return nil
         }
         
-        if let defaultSwiftLintConfiguration = self.defaultSwiftLintConfiguration,
-           defaultSwiftLintConfiguration.nameExcludingExtension.lowercased() == "swiftlint" {
-            let defaultSwiftLintConfigurationURL = URL(fileURLWithPath: defaultSwiftLintConfiguration.path)
+        if potentialConfigurationFile.nameExcludingExtension.lowercased() == "swiftlint" {
+            let defaultSwiftLintConfigurationURL = URL(fileURLWithPath: potentialConfigurationFile.path)
                 .deletingLastPathComponent()
                 .appendingPathComponent(".swiftlint.yml")
                 .path
             
             try shellOut(to: "rm -f \"\(defaultSwiftLintConfigurationURL)\"")
-            try self.defaultSwiftLintConfiguration?.rename(to: ".swiftlint", keepExtension: true)
+            try potentialConfigurationFile.rename(to: ".swiftlint", keepExtension: true)
         }
+        
+        return potentialConfigurationFile
     }
 }
