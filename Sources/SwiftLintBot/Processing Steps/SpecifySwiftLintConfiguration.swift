@@ -5,9 +5,8 @@
 //  Created by Paul Schmiedmayer on 12/21/20.
 //
 
-import Vapor
-import Files
 import ShellOut
+import Vapor
 
 
 extension BitbucketEvent {
@@ -24,8 +23,7 @@ extension BitbucketEvent {
         }
         
         request.logger.info("No .swiftlint.yml file was found. Replacing it with a default file.")
-        let sourceCodeFolder = try Folder(path: sourceCodeDirectory)
-        try defaultSwiftLintConfiguration.copy(to: sourceCodeFolder)
+        try shellOut(to: "cp \"\(defaultSwiftLintConfiguration.path)\" \"\(sourceCodeDirectory)/.swiftlint.yml\"")
         
         return try executeSwiftLint(on: request)
     }

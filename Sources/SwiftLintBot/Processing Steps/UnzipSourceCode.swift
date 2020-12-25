@@ -8,6 +8,7 @@
 import Vapor
 import ShellOut
 
+
 extension BitbucketEvent {
     func unzipSourceCode(on request: Request) throws -> EventLoopFuture<Void> {
         try shellOut(to: "rm -rf \(sourceCodeDirectory)")

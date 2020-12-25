@@ -5,10 +5,11 @@
 //  Created by Paul Schmiedmayer on 12/21/20.
 //
 
-import Vapor
-import Files
-import ShellOut
 import ArgumentParser
+import ShellOut
+import SwiftLintFramework
+import Vapor
+
 
 struct Context: ParsableCommand {
     @ArgumentParser.Option(help: "The Bitbucket instance that is used. E.g.: bitbucket.schmiedmayer.com.")
@@ -33,7 +34,7 @@ struct Context: ParsableCommand {
         """,
         transform: readConfigurationFile
     )
-    var configuration: Files.File? = nil
+    var configuration: URL? = nil
     
     
     var baseURL: String {
@@ -48,27 +49,19 @@ struct Context: ParsableCommand {
     }
     
     
-    private static func readConfigurationFile(_ string: String) throws -> Files.File? {
-        let potentialConfigurationFile: Files.File
+    private static func readConfigurationFile(_ string: String) throws -> URL? {
+        let potentialConfigurationFile: URL
         
         if string == "default",
-           let potentialConfigurationFilePath = Bundle.module.url(forResource: "swiftlint", withExtension: "yml")?.path {
-            potentialConfigurationFile = try File(path: potentialConfigurationFilePath)
-        } else if let potentialCustomConfigurationFile = try? File(path: string) {
-            potentialConfigurationFile = potentialCustomConfigurationFile
+           let potentialConfigurationFilePath = Bundle.module.url(forResource: "swiftlint", withExtension: "yml") {
+            potentialConfigurationFile = potentialConfigurationFilePath
         } else {
-            return nil
+            potentialConfigurationFile = URL(fileURLWithPath: string)
         }
         
-        if potentialConfigurationFile.nameExcludingExtension.lowercased() == "swiftlint" {
-            let defaultSwiftLintConfigurationURL = URL(fileURLWithPath: potentialConfigurationFile.path)
-                .deletingLastPathComponent()
-                .appendingPathComponent(".swiftlint.yml")
-                .path
-            
-            try shellOut(to: "rm -f \"\(defaultSwiftLintConfigurationURL)\"")
-            try potentialConfigurationFile.rename(to: ".swiftlint", keepExtension: true)
-        }
+        let relativePath = potentialConfigurationFile.relativePath(to: Bundle.module.bundleURL)
+        app.logger.notice("Trying to load the default SwiftLint configuration at \(relativePath)")
+        let _ = Configuration(configurationFiles: [potentialConfigurationFile.path])
         
         return potentialConfigurationFile
     }

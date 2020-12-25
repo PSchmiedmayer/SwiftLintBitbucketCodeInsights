@@ -1,6 +1,7 @@
 import Vapor
 import ShellOut
 
+
 var env = Environment(name: "custom", arguments: ["serve"])
 try LoggingSystem.bootstrap(from: &env)
 
@@ -18,6 +19,9 @@ app.post { request in
         .flatMapThrowing { bitbucketEvent -> EventLoopFuture<Void> in
             request.logger.info("Parsed webhook request: \(bitbucketEvent.type)")
             return try bitbucketEvent.performSwiftLintBotActions(on: request)
+                .map {
+                    request.logger.info("Done ✅")
+                }
         }
         .transform(to: "Done ✅")
 }
