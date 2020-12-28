@@ -1,8 +1,12 @@
 import Vapor
 import ShellOut
 
+#if DEBUG
+var env = try Environment.detect(arguments: [CommandLine.arguments.first ?? ".", "serve", "--env", "development", "--hostname", "0.0.0.0", "--port", "8080"])
+#else
+var env = try Environment.detect(arguments: [CommandLine.arguments.first ?? ".", "serve", "--env", "production", "--hostname", "0.0.0.0", "--port", "8080"])
+#endif
 
-var env = Environment(name: "custom", arguments: ["serve"])
 try LoggingSystem.bootstrap(from: &env)
 
 let app = Application(env)

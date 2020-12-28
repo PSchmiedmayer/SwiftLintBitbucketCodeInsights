@@ -1,12 +1,3 @@
-<<<<<<< HEAD
-module: PROJECT_NAME
-author: Apodini
-theme: fullwidth
-output: ./docs
-documentation: ./*.md
-author_url: https://github.com/Apodini
-github_url: https://github.com/Apodini/PROJECT_NAME
-=======
 module: SwiftLint Bitbucket Code Insights
 author: Paul Schmiedmayer
 theme: fullwidth
@@ -14,4 +5,3 @@ output: ./docs
 documentation: ./*.md
 author_url: https://github.com/PSchmiedmayer
 github_url: https://github.com/PSchmiedmayer/SwiftLintBitbucketCodeInsights
->>>>>>> develop
