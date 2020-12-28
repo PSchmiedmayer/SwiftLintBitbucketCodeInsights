@@ -15,7 +15,7 @@ defer {
 }
 
 let context = Context.parseOrExit()
-
+app.logger.logLevel = .trace
 
 app.post { request in
     try BitbucketEvent
