@@ -3,12 +3,12 @@ import PackageDescription
 
 
 let package = Package(
-    name: "SwiftLint Bitbucket Code Insights",
+    name: "swiftlintbot",
     platforms: [
         .macOS(.v10_15)
     ],
     products: [
-        .executable(name: "SwiftLintBot", targets: ["SwiftLintBot"])
+        .executable(name: "swiftlintbot", targets: ["SwiftLintBot"])
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser", from: "0.3.0"),
