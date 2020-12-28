@@ -31,6 +31,21 @@ struct InsightsReport: Content {
             case type
         }
         
+        
+        var title: String {
+            switch self {
+            case let .bool(title, _): return title
+            case let .date(title, _): return title
+            case let .duration(title, _): return title
+            case let .link(title, _): return title
+            case let .number(title, _): return title
+            case let .decimalNumber(title, _): return title
+            case let .percentage(title, _): return title
+            case let .text(title, _): return title
+            }
+        }
+        
+        
         init(from decoder: Decoder) throws {
             let values = try decoder.container(keyedBy: CodingKeys.self)
             let title = try values.decode(String.self, forKey: .title)
@@ -53,6 +68,7 @@ struct InsightsReport: Content {
                 self = .text(title: title, try values.decode(String.self, forKey: .value))
             }
         }
+        
         
         func encode(to encoder: Encoder) throws {
             var container = encoder.container(keyedBy: CodingKeys.self)
@@ -110,6 +126,18 @@ extension InsightsReport {
         let violationGroups = Dictionary(grouping: violations, by: { $0.ruleName })
         self.data = violationGroups.map { key, values in
             .number(title: "\(key)", values.count)
+        }
+        // Bitbucket only accepts 6 or less elements in the data section.
+        if data.count > 6 {
+            let title = data.suffix(data.count - 5).map { $0.title }.joined(separator: " & ") + " violations"
+            let number = data.suffix(data.count - 5).reduce(0) {
+                switch $1 {
+                case let .number(_, number): return $0 + number
+                default: return $0
+                }
+            }
+            data.removeLast(data.count - 5)
+            data.append(.number(title: title, number))
         }
     }
 }

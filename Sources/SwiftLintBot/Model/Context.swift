@@ -34,7 +34,7 @@ struct Context: ParsableCommand {
         """,
         transform: readConfigurationFile
     )
-    var configuration: URL? = nil
+    var configuration: URL?
     
     
     var baseURL: String {
@@ -61,7 +61,7 @@ struct Context: ParsableCommand {
         
         let relativePath = potentialConfigurationFile.relativePath(to: Bundle.module.bundleURL)
         app.logger.notice("Trying to load the default SwiftLint configuration at \(relativePath)")
-        let _ = Configuration(configurationFiles: [potentialConfigurationFile.path])
+        _ = Configuration(configurationFiles: [potentialConfigurationFile.path])
         
         return potentialConfigurationFile
     }

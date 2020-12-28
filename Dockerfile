@@ -1,7 +1,7 @@
 # ================================
 # Build image
 # ================================
-FROM swift:5.3-focal as build
+FROM swift:latest as build
 
 # Install OS updates and, if needed, sqlite3
 RUN export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true \
@@ -33,12 +33,18 @@ RUN cp "$(swift build --package-path /build -c release --show-bin-path)/swiftlin
 
 # Copy resouces from the resources directory if the directories exist
 # Ensure that by default, neither the directory nor any of its contents are writable.
-RUN [ -d /build/Sources/SwiftLintBot/Resources ] && { mkdir --parents ./Sources/SwiftLintBot && mv /build/Sources/SwiftLintBot/Resources ./Sources/SwiftLintBot/Resources && chmod -R a-w ./Sources/SwiftLintBot/Resources; } || true
+RUN mv "$(swift build --package-path /build -c release --show-bin-path)/swiftlintbot_SwiftLintBot.resources" ./ && chmod -R a-w ./swiftlintbot_SwiftLintBot.resources
+
+# Switch to the the libraries area
+WORKDIR /libraries
+
+# Copy the SourceKit library
+RUN cp /usr/lib/libsourcekitdInProc.so ./
 
 # ================================
 # Run image
 # ================================
-FROM swift:5.3-focal-slim
+FROM swift:slim
 
 # Make sure all system packages are up to date.
 RUN export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true && \
@@ -52,6 +58,9 @@ WORKDIR /app
 
 # Copy built executable and any staged resources from builder
 COPY --from=build --chown=swiftlint:swiftlint /staging /app
+
+# Copy Swift runtime libraries
+COPY --from=build --chown=swiftlint:swiftlint /libraries /usr/lib/
 
 # Ensure all further commands run as the swiftlint user
 USER swiftlint:swiftlint

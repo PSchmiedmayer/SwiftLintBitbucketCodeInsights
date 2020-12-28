@@ -47,10 +47,10 @@ extension BitbucketEvent {
     }
     
     private func deleteAllAnnotations(on request: Request) throws -> EventLoopFuture<Void> {
-        return request.client.delete(annotationsURL, headers: context.requestHeader)
+        request.client.delete(annotationsURL, headers: context.requestHeader)
             .flatMapThrowing { response in
                 guard response.status == .noContent else {
-                    request.logger.error("Could not delete the annotations from bitbucket")
+                    request.logger.error("Could not delete the annotations from bitbucket: \(response.status). \((try? response.content.decode(String.self)) ?? "No error description provided")")
                     throw Abort(.internalServerError, reason: "Could not delete the annotations from bitbucket")
                 }
             }
@@ -66,7 +66,7 @@ extension BitbucketEvent {
         }
             .flatMapThrowing { response in
                 guard response.status == .noContent else {
-                    request.logger.error("Could not post the annotations")
+                    request.logger.error("Could not post the annotations: \(response.status). \((try? response.content.decode(String.self)) ?? "No error description provided")")
                     throw Abort(.internalServerError, reason: "Could not post the annotations")
                 }
             }
@@ -78,7 +78,7 @@ extension BitbucketEvent {
         }
             .flatMapThrowing { response in
                 guard response.status == .ok else {
-                    request.logger.error("Could not update the insights report")
+                    request.logger.error("Could not update the insights report: \(response.status). \((try? response.content.decode(String.self)) ?? "No error description provided")")
                     throw Abort(.internalServerError, reason: "Could not update the insights report")
                 }
             }
