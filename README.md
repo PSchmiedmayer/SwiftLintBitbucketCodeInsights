@@ -11,13 +11,13 @@ Once you have deployed the web service, you will configure repositories to send 
 
 1. Navigate to your repository settings in the Bitbucket server and select the **Webhooks** section.
 2. Select **Create webhook** and add the following information:
- - Name: A descriptive name, e.g.: *SwiftLint Bitbucket Code Insights*
- - URL: The URL you have deployed the SwiftLint Bitbucket Code Insights web service to. 
- - Secret: Can be left empty.
- - Select the following events: 
-  - *Opened*: A pull request is opened or reopened.
-  - *Source branch updated*: A pull request's source branch has been updated.
-  - *Modified*: A pull request's description, title, or target branch is changed.
+  * Name: A descriptive name, e.g.: *SwiftLint Bitbucket Code Insights*
+  * URL: The URL you have deployed the SwiftLint Bitbucket Code Insights web service to. 
+  * Secret: Can be left empty.
+  * Select the following events: 
+    * *Opened*: A pull request is opened or reopened.
+    * *Source branch updated*: A pull request's source branch has been updated.
+    * *Modified*: A pull request's description, title, or target branch is changed.
 3. Make sure that the webhook is set to active at the bottom of the page and press **Create**.
 
 ![A screenshot showing the Bitbucket settings screen with the settings filled in as described in the description above.](Documentation/Configuration.jpeg)
