@@ -66,6 +66,10 @@ extension BitbucketEvent {
             throw Abort(.badRequest, reason: "Unexpected \"X-Event-Key\" header value named \"\(eventKey)\"")
         }
         
+        if case .diagnostics = type {
+            throw Abort(.ok, reason: "Only a ping. The SwiftLint Bitbucket Code Insights service is up and running 👋")
+        }
+        
         return request.body
             .collect()
             .unwrap(or: Abort(.badRequest, reason: "Could not parse the pull request body"))
