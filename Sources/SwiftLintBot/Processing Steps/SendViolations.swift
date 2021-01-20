@@ -17,6 +17,11 @@ extension BitbucketEvent {
         "\(reportURL)/annotations"
     }
     
+    private var violationsChunkSize: Int {
+        25
+    }
+    
+    
     func send(_ violations: [StyleViolation], on request: Request) throws -> EventLoopFuture<Void> {
         try deleteAllAnnotations(on: request)
             .flatMap { () -> EventLoopFuture<Void> in
@@ -57,19 +62,32 @@ extension BitbucketEvent {
     }
     
     private func postAllAnnotations(basedOn violations: [StyleViolation], on request: Request) throws -> EventLoopFuture<Void> {
-        request.client.post(annotationsURL, headers: context.requestHeader) { clientRequest in
-                try clientRequest.content.encode(
-                    [
-                        "annotations": violations.map { try Annotation($0, relativeTo: URL(fileURLWithPath: sourceCodeDirectory)) }
-                    ]
-                )
-        }
-            .flatMapThrowing { response in
-                guard response.status == .noContent else {
-                    request.logger.error("Could not post the annotations: \(response.status). \((try? response.content.decode(String.self)) ?? "No error description provided")")
-                    throw Abort(.internalServerError, reason: "Could not post the annotations")
-                }
+        // swiftlint:disable:next array_init
+        stride(from: 0, to: violations.count, by: violationsChunkSize)
+            .map {
+                violations[$0 ..< min($0 + violationsChunkSize, violations.count)]
             }
+            .map { chunkedViolations in
+                request.client.post(annotationsURL, headers: context.requestHeader) { clientRequest in
+                        try clientRequest.content.encode(
+                            [
+                                "annotations": chunkedViolations.map {
+                                    try Annotation($0, relativeTo: URL(fileURLWithPath: sourceCodeDirectory))
+                                }
+                            ]
+                        )
+                }
+                    .flatMapThrowing { response in
+                        guard response.status == .noContent else {
+                            request.logger.error("Could not post the annotations: \(response.status). \((try? response.content.decode(String.self)) ?? "No error description provided")")
+                            throw Abort(.internalServerError, reason: "Could not post the annotations")
+                        }
+                    }
+            }
+            .map { test in
+                test
+            }
+            .flatten(on: request.eventLoop)
     }
     
     private func updateInsightsReport(basedOn violations: [StyleViolation], on request: Request) throws -> EventLoopFuture<Void> {
