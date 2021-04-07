@@ -46,6 +46,8 @@ only_rules:
     # if, for, guard, switch, while, and catch statements shouldn't unnecessarily wrap their conditionals or arguments in parentheses.
   - convenience_type
     # Types used for hosting only static members should be implemented as a caseless enum to avoid instantiation.
+  - custom_rules
+    # Custom Rules are defined below
   - cyclomatic_complexity
     # Complexity of function bodies should be limited.
   - discarded_notification_center_observer
@@ -316,6 +318,18 @@ only_rules:
     # An XCTFail call should include a description of the assertion.
   - yoda_condition
     # The variable should be placed on the left, the constant on the right of a comparison operator.
+
+custom_rules:
+  xcode_template_token:
+    name: "Xcode Template"
+    regex: "(\/\\*@START_MENU_TOKEN@\\*\/.*?\/\\*@END_MENU_TOKEN@\\*\/)"
+    message: "Xcode generated code templates must be removed."
+    severity: error
+  xcode_placeholder:
+    name: "Xcode Placeholder"
+    regex: "(#.##.*##.*#)"
+    message: "Xcode generated placeholders must be removed."
+    severity: error
 
 excluded: # paths to ignore during linting. Takes precedence over `included`.
   - Carthage
