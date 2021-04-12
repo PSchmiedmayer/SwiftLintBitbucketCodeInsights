@@ -319,18 +319,6 @@ only_rules:
   - yoda_condition
     # The variable should be placed on the left, the constant on the right of a comparison operator.
 
-custom_rules:
-  xcode_template_token:
-    name: "Xcode Template"
-    regex: "(\/\\*@START_MENU_TOKEN@\\*\/.*?\/\\*@END_MENU_TOKEN@\\*\/)"
-    message: "Xcode generated code templates must be removed."
-    severity: error
-  xcode_placeholder:
-    name: "Xcode Placeholder"
-    regex: "(#.##.*##.*#)"
-    message: "Xcode generated placeholders must be removed."
-    severity: error
-
 excluded: # paths to ignore during linting. Takes precedence over `included`.
   - Carthage
   - Pods
@@ -363,7 +351,6 @@ identifier_name:
     - id
     - ok
     - or
-    - _body
 
 large_tuple: # Tuples shouldn't have too many members. Create a custom type instead.
   - 2 # warning - default: 2

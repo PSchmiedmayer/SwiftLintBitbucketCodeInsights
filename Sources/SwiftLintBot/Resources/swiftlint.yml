@@ -363,7 +363,7 @@ identifier_name:
     - id
     - ok
     - or
-    - _body
+    - _body(configuration:)
 
 large_tuple: # Tuples shouldn't have too many members. Create a custom type instead.
   - 2 # warning - default: 2
