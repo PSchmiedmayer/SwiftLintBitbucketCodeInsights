@@ -14,6 +14,7 @@ extension BitbucketEvent {
     }
     
     func downloadSourceCode(on request: Request) throws -> EventLoopFuture<Void> {
+        request.logger.info("Create a working directory at \(workingDirectory)")
         try shellOut(to: "mkdir -p \(self.workingDirectory)")
         
         return request.client
