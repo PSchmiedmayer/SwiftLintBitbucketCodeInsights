@@ -20,8 +20,8 @@ defer {
 
 let context = Context.parseOrExit()
 
-if let logLevel = context.logLevel {
-    app.logger.logLevel = logLevel
+if let loglevel = context.loglevel {
+    app.logger.logLevel = loglevel
 }
 
 app.post { request in
