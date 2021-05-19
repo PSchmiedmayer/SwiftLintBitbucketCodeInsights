@@ -23,14 +23,20 @@ extension BitbucketEvent {
             }
         }
         
+        request.logger.info("Start linting \(swiftFiles.count) Swift files.")
         var violations: [StyleViolation] = []
         for swiftFile in swiftFiles {
             let storage = RuleStorage()
-            violations.append(contentsOf: Linter(file: swiftFile, configuration: configuration)
-                                .collect(into: storage)
-                                .styleViolations(using: storage))
+            let styleViolations = Linter(file: swiftFile, configuration: configuration)
+                .collect(into: storage)
+                .styleViolations(using: storage)
+            
+            request.logger.debug("Found \(styleViolations.count) violations in \(swiftFile.path ?? "undefined Swift file")")
+            
+            violations.append(contentsOf: styleViolations)
         }
         
+        request.logger.info("Found \(violations.count) violations")
         return try send(violations, on: request)
     }
 }

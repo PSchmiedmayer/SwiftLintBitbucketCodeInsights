@@ -28,10 +28,10 @@ app.post { request in
     try BitbucketEvent
         .create(from: request)
         .flatMapThrowing { bitbucketEvent -> EventLoopFuture<Void> in
-            request.logger.info("Parsed webhook request: \(bitbucketEvent.type)")
+            request.logger.notice("Parsed webhook request: \(bitbucketEvent.type)")
             return try bitbucketEvent.performSwiftLintBotActions(on: request)
                 .map {
-                    request.logger.info("Done ✅")
+                    request.logger.notice("Done ✅")
                 }
         }
         .transform(to: "Done ✅")

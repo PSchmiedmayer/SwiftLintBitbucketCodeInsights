@@ -32,6 +32,7 @@ extension BitbucketEvent {
             ]
         )
         
+        request.logger.info("Unzipped files to \(sourceCodeDirectory)")
         return try specifySwiftLintConfiguration(on: request)
     }
 }

@@ -43,6 +43,7 @@ extension BitbucketEvent {
                     if case let .failure(error) = result {
                         request.logger.error("Could not send data to Bitbucket: \(error)")
                     }
+                    request.logger.info("Finished sending data to BitBucket")
                     return try cleanup(on: request)
                 } catch {
                     request.logger.error("Could not Cleanup the working directory at \(sourceCodeDirectory)")
@@ -58,6 +59,10 @@ extension BitbucketEvent {
                     request.logger.error("Could not delete the annotations from bitbucket: \(response.status). \((try? response.content.decode(String.self)) ?? "No error description provided")")
                     throw Abort(.internalServerError, reason: "Could not delete the annotations from bitbucket")
                 }
+                if request.logger.logLevel <= .debug, let body = response.body {
+                    request.logger.debug("BitBucket Reponse: \(body.getString(at: body.readerIndex, length: body.readableBytes) ?? "")")
+                }
+                request.logger.info("Successfuly deleted all annotations")
             }
     }
     
@@ -82,6 +87,10 @@ extension BitbucketEvent {
                             request.logger.error("Could not post the annotations: \(response.status). \((try? response.content.decode(String.self)) ?? "No error description provided")")
                             throw Abort(.internalServerError, reason: "Could not post the annotations")
                         }
+                        if request.logger.logLevel <= .debug, let body = response.body {
+                            request.logger.debug("BitBucket Reponse: \(body.getString(at: body.readerIndex, length: body.readableBytes) ?? "")")
+                        }
+                        request.logger.info("Successfuly posted the annotations for \(chunkedViolations.count) violations")
                     }
             }
             .map { test in
@@ -99,6 +108,10 @@ extension BitbucketEvent {
                     request.logger.error("Could not update the insights report: \(response.status). \((try? response.content.decode(String.self)) ?? "No error description provided")")
                     throw Abort(.internalServerError, reason: "Could not update the insights report")
                 }
+                if request.logger.logLevel <= .debug, let body = response.body {
+                    request.logger.debug("BitBucket Reponse: \(body.getString(at: body.readerIndex, length: body.readableBytes) ?? "")")
+                }
+                request.logger.info("Successfuly updated the insights report")
             }
     }
 }

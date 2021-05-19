@@ -33,6 +33,7 @@ extension BitbucketEvent {
             }
             .flatMap {
                 do {
+                    request.logger.info("Wrote file to \(workingDirectory)/\(pullRequest.commitHash).zip")
                     return try unzipSourceCode(on: request)
                 } catch {
                     return request.eventLoop.makeFailedFuture(error)
