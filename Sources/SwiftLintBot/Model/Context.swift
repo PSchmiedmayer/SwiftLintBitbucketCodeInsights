@@ -37,6 +37,15 @@ struct Context: ParsableCommand {
     var configuration: URL?
     
     
+    @ArgumentParser.Option(
+        help: """
+        Defines the log level of the SwiftLint Bitbucket Code Insights bot.
+        Possible values are: \(Logger.Level.allCases.map { $0.rawValue }.joined(separator: ", "))
+        """,
+        transform: readLogLevel
+    )
+    var loglevel: Logger.Level?
+    
     var baseURL: String {
         "https://\(bitbucket)/rest"
     }
@@ -64,5 +73,9 @@ struct Context: ParsableCommand {
         _ = Configuration(configurationFiles: [potentialConfigurationFile.path])
         
         return potentialConfigurationFile
+    }
+    
+    private static func readLogLevel(_ string: String) throws -> Logger.Level? {
+        Logger.Level(rawValue: string)
     }
 }

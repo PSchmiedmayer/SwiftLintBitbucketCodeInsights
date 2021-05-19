@@ -20,6 +20,10 @@ defer {
 
 let context = Context.parseOrExit()
 
+if let logLevel = context.logLevel {
+    app.logger.logLevel = logLevel
+}
+
 app.post { request in
     try BitbucketEvent
         .create(from: request)
