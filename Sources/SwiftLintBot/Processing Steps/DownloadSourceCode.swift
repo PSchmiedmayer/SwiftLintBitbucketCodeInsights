@@ -17,6 +17,8 @@ extension BitbucketEvent {
         request.logger.info("Create a working directory at \(workingDirectory)")
         try shellOut(to: "mkdir -p \(self.workingDirectory)")
         
+        request.logger.info("Send request to \(archiveRequetsURL)")
+        
         return request.client
             .get(archiveRequetsURL, headers: context.requestHeader)
             .flatMapThrowing { response -> ByteBuffer? in
